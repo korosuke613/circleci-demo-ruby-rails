@@ -1,8 +1,7 @@
 name: korosuke613/circleci-demo-ruby-rails/build_and_test
 on:
   push:
-    branches:
-    - master
+
 jobs:
   build:
     runs-on: ubuntu-latest
