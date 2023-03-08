@@ -1,0 +1,67 @@
+name: korosuke613/circleci-demo-ruby-rails/build_and_test
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up bundler cache
+      uses: ruby/setup-ruby@v1.138.0
+      with:
+        ruby-version: 2.7.5
+        bundler-cache: true
+    - uses: actions/checkout@v3.3.0
+    - run: bundle check || bundle install
+      env:
+        BUNDLE_DEPLOYMENT: true
+    - id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+    - uses: actions/cache@v3.2.2
+      with:
+        path: "${{ steps.yarn-cache-dir-path.outputs.dir }}"
+        key: "${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}"
+        restore-keys: "${{ runner.os }}-yarn-"
+    - run: yarn install --frozen-lockfile
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:9.5-alpine
+        env:
+          POSTGRES_USER: circleci-demo-ruby
+          POSTGRES_DB: rails_blog_test
+          POSTGRES_PASSWORD: ''
+    needs:
+    - build
+    env:
+      BUNDLE_JOBS: '3'
+      BUNDLE_RETRY: '3'
+      PGHOST: 127.0.0.1
+      PGUSER: circleci-demo-ruby
+      PGPASSWORD: ''
+      RAILS_ENV: test
+    steps:
+    - name: Set up bundler cache
+      uses: ruby/setup-ruby@v1.138.0
+      with:
+        ruby-version: 2.7.5
+        bundler-cache: true
+    - uses: actions/checkout@v3.3.0
+    - run: bundle check || bundle install
+      env:
+        BUNDLE_DEPLOYMENT: true
+    - id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+    - uses: actions/cache@v3.2.2
+      with:
+        path: "${{ steps.yarn-cache-dir-path.outputs.dir }}"
+        key: "${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}"
+        restore-keys: "${{ runner.os }}-yarn-"
+    - run: yarn install --frozen-lockfile
+    - name: Wait for DB
+      run: dockerize -wait tcp://localhost:5432 -timeout 1m
+    - name: Database setup
+      run: bundle exec rails db:schema:load --trace
+    - run: bundle exec rspec spec --profile 10 --format RspecJunitFormatter --out /tmp/test-results/rspec/results.xml --format progress
+    - run: bundle exec rubocop --format progress
