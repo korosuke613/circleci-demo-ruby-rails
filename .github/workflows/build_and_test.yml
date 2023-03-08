@@ -9,7 +9,7 @@ jobs:
     - name: Set up bundler cache
       uses: ruby/setup-ruby@v1.138.0
       with:
-        ruby-version: 2.7
+        ruby-version: 2.7.5
         bundler-cache: true
     - uses: actions/checkout@v3.3.0
     - run: bundle check || bundle install
@@ -45,7 +45,7 @@ jobs:
     - name: Set up bundler cache
       uses: ruby/setup-ruby@v1.138.0
       with:
-        ruby-version: 2.7
+        ruby-version: 2.7.5
         bundler-cache: true
     - uses: actions/checkout@v3.3.0
     - run: bundle check || bundle install
