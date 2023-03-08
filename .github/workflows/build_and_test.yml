@@ -5,13 +5,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: cimg/ruby:2.7-node
     steps:
     - name: Set up bundler cache
       uses: ruby/setup-ruby@v1.138.0
       with:
-        ruby-version: 3.0.2
+        ruby-version: 2.7
         bundler-cache: true
     - uses: actions/checkout@v3.3.0
     - run: bundle check || bundle install
@@ -27,8 +25,6 @@ jobs:
     - run: yarn install --frozen-lockfile
   test:
     runs-on: ubuntu-latest
-    container:
-      image: cimg/ruby:2.7-node
     services:
       postgres:
         image: postgres:9.5-alpine
@@ -49,7 +45,7 @@ jobs:
     - name: Set up bundler cache
       uses: ruby/setup-ruby@v1.138.0
       with:
-        ruby-version: 3.0.2
+        ruby-version: 2.7
         bundler-cache: true
     - uses: actions/checkout@v3.3.0
     - run: bundle check || bundle install
